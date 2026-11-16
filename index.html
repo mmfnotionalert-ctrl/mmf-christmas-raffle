@@ -623,7 +623,7 @@ function applyMilestones(pct){
  document.getElementById("sleigh").hidden=pct<75;
  document.querySelectorAll(".mile").forEach(m=>{const on=pct>=+m.dataset.at;m.classList.toggle("on",on);m.querySelector(".st").textContent=on?"Unlocked":"Locked"});
 }
-function setNow(){const n=Math.round(Math.min(1,SOLD/GOAL)*lights.length);soldEl.textContent=SOLD;fill.style.width=Math.min(100,SOLD/GOAL*100)+"%";lightUp(n);setStar()}
+function setNow(){if(typeof showOn!=="undefined"&&showOn)return;const n=Math.round(Math.min(1,SOLD/GOAL)*lights.length);soldEl.textContent=SOLD;fill.style.width=Math.min(100,SOLD/GOAL*100)+"%";lightUp(n);setStar()}
 
 /* ---------- Make it yours ---------- */
 const NEED={"Classic":1,"Premium":5,"MMF special":10};let qty=1,choice="bauble_red";
@@ -660,8 +660,8 @@ document.getElementById("decoForm").addEventListener("submit",e=>{e.preventDefau
 renderPicker();
 /* ---------- Fun extras ---------- */
 let cheerT=null;
-function celebrate(text){const sc=document.getElementById("scene"),c=document.getElementById("cheer");
- c.innerHTML=`<b>${esc(text)}</b><span>Thank you, everyone!</span>`;c.hidden=false;clearTimeout(cheerT);cheerT=setTimeout(()=>c.hidden=true,4200);
+function celebrate(text,sub){const sc=document.getElementById("scene"),c=document.getElementById("cheer");
+ c.innerHTML=`<b>${esc(text)}</b><span>${esc(sub||"Thank you, everyone!")}</span>`;c.hidden=false;clearTimeout(cheerT);cheerT=setTimeout(()=>c.hidden=true,4200);
  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
  const cols=["#f2c14e","#78D64B","#d23a52","#8ec5ff","#ffffff"];
  for(let i=0;i<70;i++){const f=document.createElement("i");f.className="cfall";f.style.left=(Math.random()*100)+"%";f.style.background=cols[i%cols.length];f.style.setProperty("--ct",(1.8+Math.random()*1.8)+"s");f.style.setProperty("--cx",(Math.random()*120-60)+"px");f.style.setProperty("--cr",(360+Math.random()*720)+"deg");f.style.animationDelay=(Math.random()*.6)+"s";sc.appendChild(f);setTimeout(()=>f.remove(),4500)}}
@@ -780,7 +780,15 @@ function markMine(id){MINE_ID=id;const g=decoLayer.querySelector(`.deco[data-id=
  g.classList.add("mine");const m=/translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(g.getAttribute("transform")||"");
  if(m){const x=+m[1],y=+m[2];const t=el("g",{class:"minetag",transform:`translate(${x} ${y-26})`},decoLayer);t.innerHTML=`<rect x="-34" y="-9" width="68" height="16" rx="8" fill="#78D64B"/><text y="3" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="9" fill="#05240f">This is yours</text>`}
  const bar=document.getElementById("mineBar");bar.hidden=false;document.getElementById("mineShow").onclick=()=>{document.getElementById("scene").scrollIntoView({behavior:"smooth",block:"center"});g.animate&&g.animate([{opacity:.2},{opacity:1}],{duration:500,iterations:3})};
+ if(!thanked){thanked=true;setTimeout(thankShow,1900)}
  return true}
+// A thank-you moment for the buyer: every light comes on, the star shines and Santa flies past, then the tree goes back to where the ticket count really is.
+let thanked=false,showOn=false;
+function thankShow(){if(showOn)return;showOn=true;const sl=document.getElementById("sleigh"),still=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ lightUp(lights.length);star.classList.remove("gone","unlit");star.classList.add("lit");svg.querySelectorAll(".garland").forEach(g=>g.style.opacity=".8");
+ if(!still){sl.hidden=false;sl.style.animation="none";void sl.offsetWidth;sl.style.animation="fly 7s linear 1 both"}
+ celebrate("Your decoration is on the tree!","Thank you for supporting MMF");
+ setTimeout(()=>{sl.style.animation="";showOn=false;setNow()},still?5000:7600)}
 
 /* ---------- Live data ---------- */
 const API="/api/tree",DATA=`https://raw.githubusercontent.com/${CONFIG.repo}/main/data.json`;
