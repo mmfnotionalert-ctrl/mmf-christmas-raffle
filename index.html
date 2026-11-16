@@ -413,10 +413,13 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
     <div class="step"><span class="sn" aria-hidden="true">2</span><div class="stepbody"><h3>Pick your decoration</h3>
       <div class="picker" id="picker" role="radiogroup" aria-label="Decorations"></div>
       <div class="photobox" id="photoBox" hidden><p class="hint" style="margin:0">After you pay, email the photo you would like in your bauble to <b>info@maemurrayfoundation.org</b>. MMF checks every photo before it goes on the tree, and will only use photos of other people with their permission.</p></div></div></div>
-    <div class="step"><span class="sn" aria-hidden="true">3</span><div class="stepbody"><h3>Pay securely, then add your name</h3>
-      <p class="hint" style="margin-top:0">At our Stripe checkout you can add the name to show on the tree and a short Christmas wish. Card, Apple Pay and Google Pay all work, and your receipt is your proof of entry.</p>
+    <div class="step"><span class="sn" aria-hidden="true">3</span><div class="stepbody"><h3>Your name and a Christmas wish</h3>
+      <label for="fName">Name to show on the tree (optional)</label><input id="fName" maxlength="30" autocomplete="off" placeholder="Up to 30 characters">
+      <label for="fMsg">Your Christmas wish (optional)</label><textarea id="fMsg" maxlength="80" rows="2" placeholder="Up to 80 characters"></textarea>
+      <p class="hint"><span id="mCount">0</span> of 80 characters. Want to say more? You can add a longer message at the checkout.</p>
+      <p class="hint" id="fErr" role="alert" hidden style="color:#ffd9a0;font-weight:800">Please shorten your name or wish a little. Emojis and accented letters take up extra room.</p>
       <button class="buy" type="submit" id="goBuy">Buy 1 ticket, £5</button>
-      <p class="hint">Your decoration goes up as soon as you've paid. Names and wishes appear once MMF has checked them. You must be 16 or over to buy a ticket.</p></div></div>
+      <p class="hint">You pay securely with Stripe. Card, Apple Pay and Google Pay all work, and your receipt is your proof of entry. Your decoration goes up as soon as you've paid. You must be 16 or over to buy a ticket.</p></div></div>
   </form>
   </section>
 
@@ -634,9 +637,19 @@ function renderPicker(){Object.entries(DECO).forEach(([k,d])=>{if(qty<NEED[d.tie
  document.getElementById("qVal").textContent=qty;document.getElementById("qMinus").disabled=qty<=1;document.getElementById("qPlus").disabled=qty>=10;document.getElementById("unlock").textContent=tierFor(qty);document.getElementById("goBuy").textContent=`Buy ${qty} ticket${qty>1?"s":""}, £${qty*CONFIG.price}`}
 document.getElementById("qMinus").onclick=()=>{qty=Math.max(1,qty-1);renderPicker()};
 document.getElementById("qPlus").onclick=()=>{qty=Math.min(10,qty+1);renderPicker()};
+const fMsg=document.getElementById("fMsg");fMsg.addEventListener("input",()=>document.getElementById("mCount").textContent=fMsg.value.length);
+const fNameEl=document.getElementById("fName");function chkMsg(){document.getElementById("mCount").textContent=fMsg.value.length;document.getElementById("fErr").hidden=true}
+fNameEl.addEventListener("input",chkMsg);fMsg.addEventListener("input",chkMsg);
 document.getElementById("decoForm").addEventListener("submit",e=>{e.preventDefault();
  const url=CONFIG.links[String(qty)];if(!url){comingSoon();return}
- location.href=url+(url.includes("?")?"&":"?")+"client_reference_id=d_"+choice;
+ // The name and wish travel to Stripe inside the payment reference (letters, numbers, - and _ only, 200 at most)
+ const nm=document.getElementById("fName").value.replace(/\s+/g," ").trim(),ms=fMsg.value.replace(/\s+/g," ").trim();
+ let ref="d_"+choice;
+ if(nm||ms){const bytes=new TextEncoder().encode(nm+"\n"+ms);
+  if(bytes.length>138){document.getElementById("fErr").hidden=false;fMsg.focus();return}
+  ref+="__"+btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+ document.getElementById("fErr").hidden=true;
+ location.href=url+(url.includes("?")?"&":"?")+"client_reference_id="+ref;
 });
 renderPicker();
 /* ---------- Fun extras ---------- */
