@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Approve names and wishes | MMF Christmas Raffle</title>
+<style>
+:root{--navy:#001E62;--green:#78D64B;--ink:#1b1f3a;--line:#d9deee;--bg:#f4f6fc;--card:#fff;--muted:#59607d;--warn:#a3243a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--navy);color:#fff;padding:18px 16px}
+header h1{margin:0 auto;max-width:760px;font-size:22px}
+header p{margin:4px auto 0;max-width:760px;color:#c9d3f2;font-size:14px}
+main{max-width:760px;margin:0 auto;padding:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:700;font-size:14px;margin:10px 0 4px}
+input,textarea{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid #b9c0d8;background:#fff;color:var(--ink)}
+textarea{resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+button{font:inherit;font-weight:800;border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+.go{background:var(--green);color:#05240f}
+.no{background:#e9ecf6;color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{background:#e9ecf6;color:var(--ink)}
+.tabs button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.meta{font-size:13px;color:var(--muted);margin:0}
+.msg{font-weight:700;margin:10px 0 0}
+.msg.bad{color:var(--warn)}
+.empty{color:var(--muted);text-align:center;padding:28px 0}
+.count{font-size:12px;color:var(--muted);text-align:right;margin-top:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Names and wishes for the tree</h1><p>Mae Murray Foundation Christmas Raffle 2026. Staff only.</p></header>
+<main>
+  <form class="box" id="gate">
+    <label for="pass">Passphrase</label>
+    <input id="pass" type="password" autocomplete="off" required>
+    <div class="row"><button class="go" type="submit">Open</button></div>
+    <p class="msg bad" id="gateMsg" role="alert" hidden></p>
+  </form>
+
+  <div id="app" hidden>
+    <p class="meta" style="margin-bottom:12px">Nothing shows on the tree until you approve it. You can tidy the wording first. If you choose not to show one, the decoration stays on the tree as "A supporter".</p>
+    <div class="tabs" id="tabs">
+      <button type="button" data-s="p" aria-pressed="true">Waiting <span id="cP"></span></button>
+      <button type="button" data-s="a" aria-pressed="false">On the tree <span id="cA"></span></button>
+      <button type="button" data-s="x" aria-pressed="false">Not shown <span id="cX"></span></button>
+      <button type="button" class="no" id="reload" style="margin-left:auto">Check for new</button>
+    </div>
+    <p class="msg" id="appMsg" role="status" hidden></p>
+    <div id="list"></div>
+  </div>
+</main>
+<script>
+const DECO={bauble_red:"Red bauble",bauble_gold:"Gold bauble",cane:"Candy cane",snow:"Snowflake",gstar:"Glitter star",robin:"Robin",angel:"Angel",mmf:"MMF logo bauble",nutcracker:"Nutcracker",photo:"Photo bauble"};
+let PASS="",ITEMS=[],VIEW="p";
+const $=id=>document.getElementById(id);
+function say(el,text,bad){el.textContent=text;el.hidden=!text;el.classList.toggle("bad",!!bad)}
+async function api(method,body){
+  const r=await fetch("/api/approve",{method,headers:{"x-passphrase":PASS,"content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"});
+  let d={};try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(d.error||"error");
+  return d;
+}
+const WHY={"wrong-passphrase":"That passphrase is not right. Please try again.","not-set-up":"The passphrase has not been set up in Netlify yet.","not-found":"That one could not be found. It may have been refunded."};
+async function load(){const d=await api("GET");ITEMS=d.items||[];render()}
+function render(){
+  const n=s=>ITEMS.filter(x=>x.s===s).length;
+  $("cP").textContent="("+n("p")+")";$("cA").textContent="("+n("a")+")";$("cX").textContent="("+n("x")+")";
+  document.querySelectorAll("#tabs [data-s]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===VIEW));
+  const list=$("list");list.textContent="";
+  const rows=ITEMS.filter(x=>x.s===VIEW);
+  if(!rows.length){const p=document.createElement("p");p.className="empty";p.textContent=VIEW==="p"?"Nothing is waiting. You are all caught up.":"Nothing here yet.";list.appendChild(p);return}
+  for(const it of rows){
+    const box=document.createElement("div");box.className="box";
+    const when=new Date(it.t*1000).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"});
+    const meta=document.createElement("p");meta.className="meta";meta.textContent=`${DECO[it.d]||"Decoration"}, ${it.q} ticket${it.q>1?"s":""}, bought ${when}`;box.appendChild(meta);
+    const ln=document.createElement("label");ln.textContent="Name to show";ln.htmlFor="n"+it.id;box.appendChild(ln);
+    const inN=document.createElement("input");inN.id="n"+it.id;inN.maxLength=30;inN.value=it.n;box.appendChild(inN);
+    const lm=document.createElement("label");lm.textContent="Wish";lm.htmlFor="m"+it.id;box.appendChild(lm);
+    const inM=document.createElement("textarea");inM.id="m"+it.id;inM.rows=3;inM.maxLength=255;inM.value=it.m;box.appendChild(inM);
+    const row=document.createElement("div");row.className="row";
+    const act=(label,cls,action,done)=>{const b=document.createElement("button");b.type="button";b.className=cls;b.textContent=label;
+      b.onclick=async()=>{row.querySelectorAll("button").forEach(x=>x.disabled=true);
+        try{await api("POST",{id:it.id,action,n:inN.value,m:inM.value});await load();say($("appMsg"),done)}
+        catch(e){say($("appMsg"),WHY[e.message]||"That did not save. Please try again.",true);row.querySelectorAll("button").forEach(x=>x.disabled=false)}};
+      row.appendChild(b)};
+    if(it.s==="p"){act("Approve and show on the tree","go","approve","Approved. It will show on the tree within a minute.");act("Do not show","no","decline","Not shown. The decoration stays on the tree as A supporter.")}
+    if(it.s==="a"){act("Save changes","go","approve","Saved. The tree will update within a minute.");act("Take off the tree","no","decline","Taken off. The decoration stays on the tree as A supporter.")}
+    if(it.s==="x"){act("Approve and show on the tree","go","approve","Approved. It will show on the tree within a minute.");act("Move back to waiting","no","pending","Moved back to waiting.")}
+    box.appendChild(row);list.appendChild(box);
+  }
+}
+$("gate").addEventListener("submit",async e=>{e.preventDefault();PASS=$("pass").value;say($("gateMsg"),"");
+  try{await load();$("gate").hidden=true;$("app").hidden=false;$("pass").value=""}
+  catch(err){PASS="";say($("gateMsg"),WHY[err.message]||"Could not connect. Please try again.",true)}});
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-s]");if(!b)return;VIEW=b.dataset.s;say($("appMsg"),"");render()});
+$("reload").onclick=async()=>{try{await load();say($("appMsg"),"Up to date.")}catch(e){say($("appMsg"),"Could not check. Please try again.",true)}};
+</script>
+</body>
+</html>

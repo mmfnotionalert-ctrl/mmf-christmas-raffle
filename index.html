@@ -789,7 +789,7 @@ async function refresh(){
  const sold=(t&&typeof t.sold==="number"?t.sold:0)+paperT;
  const key=JSON.stringify([sold,goal,list,ok,paperD]);if(key===lastKey)return;lastKey=key;
  SOLD=sold;GOAL=goal;
- SUPPORTERS=list.map(x=>{const a=ok[x.id]||{};return [x.d,a.n||"A supporter",a.m||"",a.p?`https://raw.githubusercontent.com/${CONFIG.repo}/main/${a.p}`:"",x.id,!!a.n]})
+ SUPPORTERS=list.map(x=>{const a=Object.assign({},(x.n||x.m)?{n:x.n,m:x.m}:{},ok[x.id]||{});return [x.d,a.n||"A supporter",a.m||"",a.p?`https://raw.githubusercontent.com/${CONFIG.repo}/main/${a.p}`:"",x.id,!!a.n]})
   .concat(paperD.map((x,i)=>[x.d in DECO?x.d:"bauble_red",x.n||"A supporter",x.m||"","","paper"+i,!!x.n]));
  drawSupporters();
  if(firstLoad){firstLoad=false;animateCount();msQuiet=false}else setNow();

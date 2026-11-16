@@ -2,7 +2,19 @@
   publish = "."
   # Only rebuild when the page or the functions change. data.json and photos/ change often
   # and are read live from GitHub, so pushes that only touch them are skipped and use no credits.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- index.html netlify.toml netlify package.json"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- index.html approve.html netlify.toml netlify package.json"
 
 [functions]
   directory = "netlify/functions"
+
+[[redirects]]
+  from = "/approve"
+  to = "/approve.html"
+  status = 200
+
+[[headers]]
+  for = "/approve*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+    Referrer-Policy = "no-referrer"
