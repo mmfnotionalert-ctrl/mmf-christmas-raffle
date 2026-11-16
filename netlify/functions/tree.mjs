@@ -1,5 +1,5 @@
 // Tells the tree page how many tickets are sold and which decorations to hang.
-// Public, and contains no personal data. Names and wishes come from data.json once approved.
+// Public. Names and wishes are only included once MMF has approved them on the /approve page.
 import { getStore } from '@netlify/blobs';
 
 export const config = { path: '/api/tree' };
@@ -15,7 +15,8 @@ export default async () => {
   }
   const live = records.filter((r) => r && !r.v).sort((a, b) => (a.t - b.t) || (a.id < b.id ? -1 : 1));
   const sold = live.reduce((n, r) => n + (r.q || 0), 0);
-  const decorations = live.map((r) => ({ id: r.id, d: r.d }));
+  // Names and wishes are only included once a member of the MMF team has approved them.
+  const decorations = live.map((r) => (r.s === 'a' && (r.n || r.m) ? { id: r.id, d: r.d, n: r.n || '', m: r.m || '' } : { id: r.id, d: r.d }));
   return new Response(JSON.stringify({ sold, decorations, webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) }), {
     headers: {
       'content-type': 'application/json',

@@ -1,10 +1,11 @@
 // Stripe calls this the moment a raffle payment goes through. It adds the buyer's tickets
-// to the count and hangs their decoration on the tree. It stores no names, emails or phone
-// numbers: only a hashed reference, the time, the ticket count and the decoration picked.
-// Names and wishes appear only after MMF approves them in data.json.
+// to the count and hangs their decoration on the tree. It keeps a hashed reference, the time,
+// the ticket count, the decoration picked, and the name and wish the buyer asked to show on the
+// tree. It keeps no emails, phone numbers or payment details. Names and wishes stay private
+// until a member of the MMF team approves them on the /approve page.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
-import { CAMPAIGN, recordFromSession, shortHash } from '../lib/tree.mjs';
+import { CAMPAIGN, STORE, recordFromSession, shortHash, update } from '../lib/tree.mjs';
 
 export const config = { path: '/api/stripe-webhook' };
 
@@ -29,20 +30,6 @@ function verify(body, header, secret) {
   });
 }
 
-async function update(store, change) {
-  for (let attempt = 0; attempt < 12; attempt++) {
-    const cur = await store.getWithMetadata('index', { type: 'json', consistency: 'strong' });
-    const records = (cur && cur.data && cur.data.records) || [];
-    const next = change(records);
-    if (!next) return 'unchanged';
-    const opts = cur ? { onlyIfMatch: cur.etag } : { onlyIfNew: true };
-    const res = await store.setJSON('index', { records: next }, opts);
-    if (res.modified) return 'saved';
-    await new Promise((r) => setTimeout(r, 50 + Math.random() * 150));
-  }
-  throw new Error('could not save after retries');
-}
-
 export default async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -53,7 +40,7 @@ export default async (req) => {
   let event;
   try { event = JSON.parse(body); } catch { return new Response('Bad JSON', { status: 400 }); }
   const obj = (event.data && event.data.object) || {};
-  const store = getStore({ name: 'christmas-raffle', consistency: 'strong' });
+  const store = getStore({ name: STORE, consistency: 'strong' });
 
   if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
     if (obj.payment_status !== 'paid' || (obj.metadata || {}).campaign !== CAMPAIGN) return new Response('Ignored', { status: 200 });
