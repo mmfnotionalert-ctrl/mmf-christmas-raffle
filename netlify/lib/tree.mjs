@@ -24,7 +24,9 @@ export function recordFromSession(s) {
   const md = s.metadata || {};
   let q = parseInt(md.tickets, 10);
   if (!q) q = Math.round((s.amount_subtotal ?? s.amount_total ?? 0) / PRICE_PENCE);
-  const m = String(s.client_reference_id || '').match(/^d_([a-z_]+)$/);
+  // The reference is d_<decoration>, optionally followed by __<name and wish, base64url>.
+  // Only the decoration is read here: the name and wish stay in Stripe and are never stored on the site.
+  const m = String(s.client_reference_id || '').split('__')[0].match(/^d_([a-z_]+)$/);
   const d = allowedDecoration(m ? m[1] : 'bauble_red', q);
   return { id: shortHash(s.id), pi: s.payment_intent ? shortHash(s.payment_intent) : null, t: s.created, q, d, v: false };
 }
