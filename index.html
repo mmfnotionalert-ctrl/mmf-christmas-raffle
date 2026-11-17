@@ -281,7 +281,12 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
 .deco.hit>g{filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px #f2c14e)}
 .deco.mine>g{filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 12px #78D64B)}
 .minetag{pointer-events:none}
-.minebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(120,214,75,.14);border:1px solid var(--green);font-size:14px}
+.spk{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:spk 1.4s ease-out forwards}
+@keyframes spk{from{opacity:1;transform:scale(1) rotate(0)}to{opacity:0;transform:scale(.15) rotate(120deg)}}
+.deco.landing>g{transform-box:fill-box;transform-origin:center;animation:land .9s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes land{from{opacity:0;transform:scale(.1)}60%{opacity:1;transform:scale(1.5)}to{opacity:1;transform:scale(1)}}
+
+.minebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px 14px;border-radius:14px;background:rgba(120,214,75,.14);border:1px solid var(--green);font-size:14px}
 .minebar b{color:var(--green)}
 .minebar button{border:0;border-radius:10px;padding:7px 12px;font:800 13px var(--body);background:var(--green);color:#05240f;cursor:pointer;margin-left:auto}
 
@@ -358,9 +363,6 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
 
   <div class="workspace">
   <div class="left">
-  <div class="minebar" id="mineBar" hidden><span><b>This is yours!</b> Your decoration is glowing green on the tree. Your name, wish and any photo will show to everyone once a member of the MMF team has approved them.</span><button type="button" id="mineShow">Show me</button>
-    <div class="sharerow"><em>Tell your friends:</em><button type="button" data-share="native">Share</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="wa">WhatsApp</button></div>
-    <div class="perk"><b>A thank-you from Finn Lough:</b> your ticket also gives you 10% off a room-only booking, valid until 1 December 2027. <a href="https://booking.profitroom.com/en/finnlaugh/home?currency=GBP&amp;codes=Mae%20Murray" target="_blank" rel="noopener">Book with your discount applied</a><span class="hint" style="display:block;margin-top:4px">It cannot be used with other promotional codes or packages. Keep this link safe, as it only shows here after you buy.</span></div></div>
   <div class="scene" id="scene">
     <div class="glow"></div>
     <div class="sleigh" id="sleigh" hidden aria-hidden="true"><svg viewBox="0 0 280 90"><defs><symbol id="rdeer" viewBox="0 0 60 50" overflow="visible">
@@ -391,6 +393,9 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
     <div class="ground"></div>
     <div class="cheer" id="cheer" hidden role="status"></div>
   </div>
+  <div class="minebar" id="mineBar" hidden><span><b>Thank you for supporting MMF!</b> Your decoration is on the tree, under the "This is yours" label. Your name, wish and any photo will show to everyone once a member of the MMF team has approved them.</span><button type="button" id="mineShow">Show me</button>
+    <div class="sharerow"><em>Tell your friends:</em><button type="button" data-share="native">Share</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="wa">WhatsApp</button></div>
+    <div class="perk"><b>A thank-you from Finn Lough:</b> your ticket also gives you 10% off a room-only booking, valid until 1 December 2027. <a href="https://booking.profitroom.com/en/finnlaugh/home?currency=GBP&amp;codes=Mae%20Murray" target="_blank" rel="noopener">Book with your discount applied</a><span class="hint" style="display:block;margin-top:4px">It cannot be used with other promotional codes or packages. Keep this link safe, as it only shows here after you buy.</span></div></div>
   <p class="nextgift"><span id="nextGift"></span></p>
   <div class="tagpanel">
     <div class="count"><span class="n" id="sold">0</span><span class="l">tickets sold</span></div>
@@ -810,16 +815,33 @@ let MINE_ID=null;
 function markMine(id){MINE_ID=id;const g=decoLayer.querySelector(`.deco[data-id="${id}"]`);if(!g)return false;
  decoLayer.querySelectorAll(".minetag").forEach(t=>t.remove());decoLayer.querySelectorAll(".deco.mine").forEach(x=>x.classList.remove("mine"));
  g.classList.add("mine");const m=/translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(g.getAttribute("transform")||"");
- if(m){const x=+m[1],y=+m[2];const t=el("g",{class:"minetag",transform:`translate(${x} ${y-26})`},decoLayer);t.innerHTML=`<rect x="-34" y="-9" width="68" height="16" rx="8" fill="#78D64B"/><text y="3" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="9" fill="#05240f">This is yours</text>`}
+ const mx=m?+m[1]:200,my=m?+m[2]:200;
+ if(m){const x=mx,y=my;const t=el("g",{class:"minetag",transform:`translate(${x} ${y-26})`},decoLayer);t.innerHTML=`<rect x="-34" y="-9" width="68" height="16" rx="8" fill="#78D64B"/><text y="3" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="9" fill="#05240f">This is yours</text>`}
  const bar=document.getElementById("mineBar");bar.hidden=false;document.getElementById("mineShow").onclick=()=>{document.getElementById("scene").scrollIntoView({behavior:"smooth",block:"center"});g.animate&&g.animate([{opacity:.2},{opacity:1}],{duration:500,iterations:3})};
- if(!thanked){thanked=true;setTimeout(thankShow,1900)}
+ if(!thanked){thanked=true;placeShow(id,mx,my)}
  return true}
 // A thank-you moment for the buyer: every light comes on, the star shines and Santa flies past, then the tree goes back to where the ticket count really is.
 let thanked=false,showOn=false;
+// The buyer's decoration is carried onto the tree by a swirl of sparkles that winds up from the foot of the tree, switching the lights on as it climbs.
+function placeShow(id,x,y){const still=matchMedia("(prefers-reduced-motion: reduce)").matches,q=()=>decoLayer.querySelector(`.deco[data-id="${id}"]`);
+ if(still){thankShow();return}
+ const hide=v=>{const g=q();if(g)g.style.opacity=v;const t=decoLayer.querySelector(".minetag");if(t)t.style.opacity=v};hide("0");
+ document.getElementById("scene").scrollIntoView({behavior:"smooth",block:"center"});
+ const layer=el("g",{"aria-hidden":"true"}),head=el("circle",{r:4.5,fill:"#fffbe6"},layer);head.style.filter="drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px #f6d36b)";
+ const STAR="M0 -5 L1.3 -1.3 L5 0 L1.3 1.3 L0 5 L-1.3 1.3 L-5 0 L-1.3 -1.3 Z",COL=["#fff","#f6d36b","#ffe9a8","#bfe9ff"];
+ const spark=(px,py,sc)=>{const s=el("path",{d:STAR,class:"spk",fill:COL[Math.random()*COL.length|0],transform:`translate(${px.toFixed(1)} ${py.toFixed(1)}) scale(${sc.toFixed(2)})`},layer);const w=el("g",{},layer);w.appendChild(s);s.removeAttribute("transform");w.setAttribute("transform",`translate(${px.toFixed(1)} ${py.toFixed(1)}) scale(${sc.toFixed(2)})`);setTimeout(()=>w.remove(),1400)};
+ const DUR=3000,TURNS=2.5,t0=performance.now()+700;let last=0;
+ const pos=t=>{const e=1-Math.pow(1-t,2),a=TURNS*2*Math.PI*t+Math.PI,r=(1-e);return [200+(x-200)*e+r*165*Math.cos(a),445+(y-445)*e+r*26*Math.sin(a)]};
+ const step=now=>{const t=Math.max(0,Math.min(1,(now-t0)/DUR)),[px,py]=pos(t);head.setAttribute("cx",px.toFixed(1));head.setAttribute("cy",py.toFixed(1));
+  if(now>=t0&&now-last>28){last=now;spark(px+(Math.random()-.5)*10,py+(Math.random()-.5)*10,.9+Math.random()*1.3);spark(px+(Math.random()-.5)*18,py+(Math.random()-.5)*18,.5+Math.random()*.7);lightUp(Math.round(t*lights.length))}
+  if(t<1){requestAnimationFrame(step);return}
+  head.remove();for(let i=0;i<18;i++){const a=i/18*2*Math.PI,d=10+Math.random()*22;setTimeout(()=>spark(x+Math.cos(a)*d,y+Math.sin(a)*d,.7+Math.random()),i*18)}
+  hide("");const g=q();if(g){g.classList.add("landing");setTimeout(()=>g.classList.remove("landing"),1000)}
+  setTimeout(()=>layer.remove(),1500);setTimeout(thankShow,500)};
+ requestAnimationFrame(step)}
 function thankShow(){if(showOn)return;showOn=true;const sl=document.getElementById("sleigh"),still=matchMedia("(prefers-reduced-motion: reduce)").matches;
  lightUp(lights.length);star.classList.remove("gone","unlit");star.classList.add("lit");svg.querySelectorAll(".garland").forEach(g=>g.style.opacity=".8");
  if(!still){sl.hidden=false;sl.style.animation="none";void sl.offsetWidth;sl.style.animation="fly 7s linear 1 both"}
- celebrate("Your decoration is on the tree!","Thank you for supporting MMF");
  setTimeout(()=>{sl.style.animation="";showOn=false;setNow();if(typeof afterThanks==="function")afterThanks()},still?5000:7600)}
 
 /* ---------- Live data ---------- */
@@ -855,7 +877,7 @@ async function refresh(){
  MINE_ID=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16);if(markMine(MINE_ID))return;
  // Just back from paying: check every second and a half until the decoration arrives, and say so while they wait.
  WAITING=true;const bar=document.getElementById("mineBar"),w=document.createElement("div");w.className="minebar";w.id="mineWait";w.setAttribute("role","status");
- w.innerHTML="<span><b>Thank you!</b> We are hanging your decoration on the tree now. It will appear in a few seconds.</span>";bar.parentNode.insertBefore(w,bar);
+ w.innerHTML="<span><b>Thank you!</b> We are hanging your decoration on the tree now. It will appear in a few seconds.</span>";const sc=document.getElementById("scene");sc.parentNode.insertBefore(w,sc);sc.scrollIntoView({behavior:"smooth",block:"center"});
  const have=()=>!!decoLayer.querySelector(`.deco[data-id="${MINE_ID}"]`);
  for(let i=0;i<60&&!have();i++){await refresh();if(have())break;await new Promise(r=>setTimeout(r,1500))}
  WAITING=false;if(have())w.remove();else w.innerHTML="<span><b>Thank you!</b> Your payment is safe. Your decoration is taking a little longer than usual and will appear on the tree shortly.</span>";}catch(e){WAITING=false}})();
