@@ -4,7 +4,7 @@ index.html is the page, published on Netlify. Settings (ticket target, Stripe li
 approve.html (at /approve) is the staff page for approving the names and wishes buyers typed. It needs the APPROVE_PASSPHRASE environment variable in Netlify.
 data.json holds the ticket target, paper tickets, and approved photos for photo baubles. The page reads it live from this repository.
 photos/ holds approved photos for photo baubles.
-netlify/functions/stripe-webhook.mjs records each paid purchase: ticket count, decoration, and the name and wish for the tree (no emails, phone numbers or payment details). netlify/functions/approve.mjs saves MMF's approvals. netlify/functions/tree.mjs tells the page the ticket count and decorations.
+netlify/functions/stripe-webhook.mjs records each paid purchase: ticket count, decoration, and the name and wish for the tree (no emails, phone numbers or payment details). netlify/functions/approve.mjs saves MMF's approvals. netlify/functions/photo.mjs takes a buyer's photo for a photo bauble and serves it once approved. netlify/functions/tree.mjs tells the page the ticket count and decorations.
 
 Changing things in data.json (no rebuild needed):
 - "goal": the ticket target. The star lights when online plus paper tickets reach it.

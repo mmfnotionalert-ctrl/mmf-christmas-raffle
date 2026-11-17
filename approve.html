@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Approve names and wishes | MMF Christmas Raffle</title>
+<title>Approve names, wishes and photos | MMF Christmas Raffle</title>
 <style>
 :root{--navy:#001E62;--green:#78D64B;--ink:#1b1f3a;--line:#d9deee;--bg:#f4f6fc;--card:#fff;--muted:#59607d;--warn:#a3243a}
 *{box-sizing:border-box}
@@ -28,13 +28,17 @@ button{font:inherit;font-weight:800;border:0;border-radius:10px;padding:10px 16p
 .meta{font-size:13px;color:var(--muted);margin:0}
 .msg{font-weight:700;margin:10px 0 0}
 .msg.bad{color:var(--warn)}
+.phrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.phrow img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #e9b949;background:#eee}
+.chk{display:flex;align-items:center;gap:8px;margin:0;font-weight:700}
+.chk input{width:22px;height:22px;flex:none;padding:0}
 .empty{color:var(--muted);text-align:center;padding:28px 0}
 .count{font-size:12px;color:var(--muted);text-align:right;margin-top:2px}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<header><h1>Names and wishes for the tree</h1><p>Mae Murray Foundation Christmas Raffle 2026. Staff only.</p></header>
+<header><h1>Names, wishes and photos for the tree</h1><p>Mae Murray Foundation Christmas Raffle 2026. Staff only.</p></header>
 <main>
   <form class="box" id="gate">
     <label for="pass">Passphrase</label>
@@ -44,7 +48,7 @@ button{font:inherit;font-weight:800;border:0;border-radius:10px;padding:10px 16p
   </form>
 
   <div id="app" hidden>
-    <p class="meta" style="margin-bottom:12px">Nothing shows on the tree until you approve it. You can tidy the wording first. If you choose not to show one, the decoration stays on the tree as "A supporter".</p>
+    <p class="meta" style="margin-bottom:12px">Nothing shows on the tree until you approve it. You can tidy the wording first, and untick a photo if it should not be shown. If you choose not to show one, the decoration stays on the tree as "A supporter".</p>
     <div class="tabs" id="tabs">
       <button type="button" data-s="p" aria-pressed="true">Waiting <span id="cP"></span></button>
       <button type="button" data-s="a" aria-pressed="false">On the tree <span id="cA"></span></button>
@@ -83,10 +87,13 @@ function render(){
     const inN=document.createElement("input");inN.id="n"+it.id;inN.maxLength=30;inN.value=it.n;box.appendChild(inN);
     const lm=document.createElement("label");lm.textContent="Wish";lm.htmlFor="m"+it.id;box.appendChild(lm);
     const inM=document.createElement("textarea");inM.id="m"+it.id;inM.rows=3;inM.maxLength=255;inM.value=it.m;box.appendChild(inM);
+    let showPh=null;
+    if(it.img){const pw=document.createElement("div");pw.className="phrow";const im=document.createElement("img");im.src=it.img;im.alt="Photo uploaded for this bauble";im.width=120;im.height=120;pw.appendChild(im);
+      const lab=document.createElement("label");lab.className="chk";showPh=document.createElement("input");showPh.type="checkbox";showPh.checked=it.s==="a"?it.po:true;lab.appendChild(showPh);lab.appendChild(document.createTextNode(" Show this photo in the bauble"));pw.appendChild(lab);box.appendChild(pw)}
     const row=document.createElement("div");row.className="row";
     const act=(label,cls,action,done)=>{const b=document.createElement("button");b.type="button";b.className=cls;b.textContent=label;
       b.onclick=async()=>{row.querySelectorAll("button").forEach(x=>x.disabled=true);
-        try{await api("POST",{id:it.id,action,n:inN.value,m:inM.value});await load();say($("appMsg"),done)}
+        try{await api("POST",{id:it.id,action,n:inN.value,m:inM.value,photo:showPh?showPh.checked:undefined});await load();say($("appMsg"),done)}
         catch(e){say($("appMsg"),WHY[e.message]||"That did not save. Please try again.",true);row.querySelectorAll("button").forEach(x=>x.disabled=false)}};
       row.appendChild(b)};
     if(it.s==="p"){act("Approve and show on the tree","go","approve","Approved. It will show on the tree within a minute.");act("Do not show","no","decline","Not shown. The decoration stays on the tree as A supporter.")}

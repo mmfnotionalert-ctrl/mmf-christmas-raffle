@@ -318,9 +318,13 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
 @media (prefers-reduced-motion:reduce){.ticker{overflow-x:auto}.ticker .track{padding-left:12px}.cfall{display:none}}
 .left{min-width:0}
 .ticker{max-width:100%}
-.tp .tgroup:last-child .trow{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tp .tgroup:last-child .trow{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tp .pick.big{grid-column:auto;flex-direction:column;gap:2px;padding:8px 4px 6px}
 .tp .pick.big svg{width:54px;height:54px}
+.phprev{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-size:14px}
+.phprev svg{flex:none;overflow:visible}
+.phclear{margin-top:6px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:var(--snow);border-radius:8px;padding:5px 10px;font:700 13px var(--body);cursor:pointer}
+.phclear:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -354,7 +358,7 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
 
   <div class="workspace">
   <div class="left">
-  <div class="minebar" id="mineBar" hidden><span><b>This is yours!</b> Your decoration is glowing green on the tree. Your name and wish will show once a member of the MMF team has approved them.</span><button type="button" id="mineShow">Show me</button>
+  <div class="minebar" id="mineBar" hidden><span><b>This is yours!</b> Your decoration is glowing green on the tree. Your name, wish and any photo will show to everyone once a member of the MMF team has approved them.</span><button type="button" id="mineShow">Show me</button>
     <div class="sharerow"><em>Tell your friends:</em><button type="button" data-share="native">Share</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="wa">WhatsApp</button></div>
     <div class="perk"><b>A thank-you from Finn Lough:</b> your ticket also gives you 10% off a room-only booking, valid until 1 December 2027. <a href="https://booking.profitroom.com/en/finnlaugh/home?currency=GBP&amp;codes=Mae%20Murray" target="_blank" rel="noopener">Book with your discount applied</a><span class="hint" style="display:block;margin-top:4px">It cannot be used with other promotional codes or packages. Keep this link safe, as it only shows here after you buy.</span></div></div>
   <div class="scene" id="scene">
@@ -422,7 +426,7 @@ h1{text-shadow:0 0 30px rgba(242,193,78,.25)}
       <p class="unlock" id="unlock"></p></div></div>
     <div class="step"><span class="sn" aria-hidden="true">2</span><div class="stepbody"><h3>Pick your decoration</h3>
       <div class="picker" id="picker" role="radiogroup" aria-label="Decorations"></div>
-      <div class="photobox" id="photoBox" hidden><p class="hint" style="margin:0">After you pay, email the photo you would like in your bauble to <b>info@maemurrayfoundation.org</b>. MMF checks every photo before it goes on the tree, and will only use photos of other people with their permission.</p></div></div></div>
+      <div class="photobox" id="photoBox" hidden><label class="upl" for="fPhoto">Add your photo</label><input type="file" id="fPhoto" accept="image/*"><div class="phprev" id="phPrev" hidden><svg id="phSvg" viewBox="-15 -21 30 36" width="96" height="115" aria-hidden="true"></svg><div><b>This is how your bauble will look.</b><br><button type="button" class="phclear" id="phClear">Remove photo</button></div></div><p class="hint" id="phNote">Choose a photo to go inside your bauble. You will see it on the tree as soon as you have paid. Everyone else sees it once a member of the MMF team has approved it. Please only use photos of other people with their permission.</p><p class="hint" id="phErr" role="alert" hidden style="color:#ffd9a0;font-weight:800">Sorry, that photo could not be used. Please try a different one.</p></div></div></div>
     <div class="step"><span class="sn" aria-hidden="true">3</span><div class="stepbody"><h3>Your name and a Christmas wish</h3>
       <label for="fName">Name to show on the tree (optional)</label><input id="fName" maxlength="30" autocomplete="off" placeholder="Up to 30 characters">
       <label for="fMsg">Your Christmas wish (optional)</label><textarea id="fMsg" maxlength="80" rows="2" placeholder="Up to 80 characters"></textarea>
@@ -504,7 +508,7 @@ const BONUS=[
  ["Four ball golf","Cushendall Golf Club"],["Four ball golf","Cairndhu Golf Club"],
  ["£25 voucher","Hillmount Garden Centre"],["4 free coffees","Babushka, Portrush"],
  ["Complimentary cinema passes","Movie House"],["Family pass","Dundonald Ice Bowl"],
- ["\"Shelducks\" art print","Patsy Morrogh"],["Family gift voucher","Armagh Observatory and Planetarium"],["Family pass","Streamvale Open Farm"],["Family e-ticket","EPIC The Irish Emigration Museum"]
+ ["Two night stay for a family of up to 10 people","Share Centre"],["Print of \"Shelducks\"","Patsy Morrogh"],["Family gift voucher","Armagh Observatory and Planetarium"],["Family pass","Streamvale Open Farm"],["Family e-ticket","EPIC The Irish Emigration Museum"]
 ];
 const DRAW="2026-12-18";
 // Donor logos: add each business's logo file here once they've sent it or said yes, e.g. "Finn Lough":"logos/finn-lough.png"
@@ -580,11 +584,11 @@ const DECO={
  bauble_gold:{name:"Gold bauble",tier:"Classic",draw:()=>`${cap()}<circle r="10" fill="url(#gGold)"/>${[-6,-3,0,3,6].map(x=>`<circle cx="${x}" cy="${1.2+Math.abs(x)*-.08}" r=".9" fill="#fff" opacity=".85"/>`).join("")}<ellipse cx="-3.6" cy="-4" rx="2.4" ry="3.4" fill="#fff" opacity=".55" transform="rotate(25 -3.6 -4)"/>`},
  cane:{name:"Candy cane",tier:"Classic",draw:()=>`<path d="M3 13 L3 -5 A6 6 0 0 0 -9 -5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M3 13 L3 -5 A6 6 0 0 0 -9 -5" fill="none" stroke="#d8314c" stroke-width="5" stroke-dasharray="2.6 2.6" stroke-linecap="butt"/><path d="M3 2 c-5 -4 -8 1 -4 2 c-4 1 -1 6 4 2 c5 4 8 -1 4 -2 c4 -1 1 -6 -4 -2z" fill="#1d6b3b" stroke="#0f4426" stroke-width=".6"/><circle cx="3" cy="2" r="1.3" fill="#e9b949"/>`},
  snow:{name:"Snowflake",tier:"Classic",draw:()=>`<g stroke="#f4f8ff" stroke-width="1.6" stroke-linecap="round" fill="none" style="filter:drop-shadow(0 0 2px #bcd7ff)">${[0,60,120,180,240,300].map(a=>`<g transform="rotate(${a})"><line x1="0" y1="0" x2="0" y2="-11"/><path d="M-3.2 -6.5 L0 -4 L3.2 -6.5"/><path d="M-2.2 -9.6 L0 -8.2 L2.2 -9.6"/></g>`).join("")}</g><circle r="1.8" fill="#cfe3ff"/>`},
- gstar:{name:"Glitter star",tier:"Premium",draw:()=>`<line y1="-17" y2="-12" stroke="#e9b949" stroke-width=".8"/><polygon points="0,-13 3.9,-4.3 13,-4.3 5.6,1.6 8.3,11 0,5.6 -8.3,11 -5.6,1.6 -13,-4.3 -3.9,-4.3" fill="url(#gGlit)" stroke="#fff3c4" stroke-width="1" stroke-linejoin="round"/>${[[-3,-2],[2,-5],[4,2],[-4,4],[0,1],[-1,-7],[6,-3]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".7" fill="#fff"/>`).join("")}${sparkle(9,-10,1.3)}${sparkle(-10,8,1)}`},
- robin:{name:"Robin",tier:"Premium",draw:()=>`<path d="M-9 4 L-15 1 L-14 6 Z" fill="#4a2c14"/><ellipse cx="-1" cy="2" rx="10.5" ry="8.5" fill="url(#gRobin)"/><circle cx="6" cy="-5" r="6" fill="url(#gRobin)"/><path d="M1 -3 Q8 -2 7 4 Q4 10 -3 8 Q-2 1 1 -3Z" fill="url(#gBreast)"/><path d="M-9 0 Q-3 -3 2 3 Q-4 6 -9 0Z" fill="#4a2c14" opacity=".8"/><circle cx="8" cy="-6.5" r="1.4" fill="#111"/><circle cx="8.4" cy="-7" r=".45" fill="#fff"/><path d="M11.5 -5.6 L15.5 -4.6 L11.5 -3.4 Z" fill="#e9b949"/><path d="M-2 10 l-1 3 M2 10 l1 3" stroke="#3a220f" stroke-width="1"/><path d="M-9 13 c3 -3 7 -3 10 0 c-3 2 -7 2 -10 0z M1 13 c3 -3 7 -3 10 0 c-3 2 -7 2 -10 0z" fill="#1d6b3b"/><circle cx="1" cy="12.6" r="1.4" fill="#d8314c"/><circle cx="3" cy="13.6" r="1.2" fill="#d8314c"/>`},
- angel:{name:"Angel",tier:"Premium",draw:()=>`<path d="M-2 -2 C-12 -10 -16 0 -13 6 C-9 4 -5 2 -2 2Z M2 -2 C12 -10 16 0 13 6 C9 4 5 2 2 2Z" fill="#fff" opacity=".92" stroke="#e9e4ff" stroke-width=".6"/><path d="M0 -3 L-8 13 Q0 15.5 8 13 Z" fill="url(#gDress)" stroke="#e9b949" stroke-width=".6"/><path d="M-5.6 9.6 Q0 11.6 5.6 9.6" fill="none" stroke="#e9b949" stroke-width=".8"/><circle cy="-6.5" r="4.3" fill="#f6d9bf"/><path d="M-4.4 -6.5 C-4.6 -12 4.6 -12 4.4 -6.5 C3 -9 -3 -9 -4.4 -6.5Z" fill="#e2b14a"/><ellipse cy="-13.4" rx="5" ry="1.5" fill="none" stroke="#f6d36b" stroke-width="1.3" style="filter:drop-shadow(0 0 2px #f6d36b)"/>`},
+ gstar:{name:"Glitter star",tier:"Premium",size:1.3,draw:()=>`<line y1="-17" y2="-12" stroke="#e9b949" stroke-width=".8"/><polygon points="0,-13 3.9,-4.3 13,-4.3 5.6,1.6 8.3,11 0,5.6 -8.3,11 -5.6,1.6 -13,-4.3 -3.9,-4.3" fill="url(#gGlit)" stroke="#fff3c4" stroke-width="1" stroke-linejoin="round"/>${[[-3,-2],[2,-5],[4,2],[-4,4],[0,1],[-1,-7],[6,-3]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".7" fill="#fff"/>`).join("")}${sparkle(9,-10,1.3)}${sparkle(-10,8,1)}`},
+ robin:{name:"Robin",tier:"Premium",size:1.3,draw:()=>`<path d="M-9 4 L-15 1 L-14 6 Z" fill="#4a2c14"/><ellipse cx="-1" cy="2" rx="10.5" ry="8.5" fill="url(#gRobin)"/><circle cx="6" cy="-5" r="6" fill="url(#gRobin)"/><path d="M1 -3 Q8 -2 7 4 Q4 10 -3 8 Q-2 1 1 -3Z" fill="url(#gBreast)"/><path d="M-9 0 Q-3 -3 2 3 Q-4 6 -9 0Z" fill="#4a2c14" opacity=".8"/><circle cx="8" cy="-6.5" r="1.4" fill="#111"/><circle cx="8.4" cy="-7" r=".45" fill="#fff"/><path d="M11.5 -5.6 L15.5 -4.6 L11.5 -3.4 Z" fill="#e9b949"/><path d="M-2 10 l-1 3 M2 10 l1 3" stroke="#3a220f" stroke-width="1"/><path d="M-9 13 c3 -3 7 -3 10 0 c-3 2 -7 2 -10 0z M1 13 c3 -3 7 -3 10 0 c-3 2 -7 2 -10 0z" fill="#1d6b3b"/><circle cx="1" cy="12.6" r="1.4" fill="#d8314c"/><circle cx="3" cy="13.6" r="1.2" fill="#d8314c"/>`},
+ angel:{name:"Angel",tier:"Premium",size:1.3,draw:()=>`<path d="M-2 -2 C-12 -10 -16 0 -13 6 C-9 4 -5 2 -2 2Z M2 -2 C12 -10 16 0 13 6 C9 4 5 2 2 2Z" fill="#fff" opacity=".92" stroke="#e9e4ff" stroke-width=".6"/><path d="M0 -3 L-8 13 Q0 15.5 8 13 Z" fill="url(#gDress)" stroke="#e9b949" stroke-width=".6"/><path d="M-5.6 9.6 Q0 11.6 5.6 9.6" fill="none" stroke="#e9b949" stroke-width=".8"/><circle cy="-6.5" r="4.3" fill="#f6d9bf"/><path d="M-4.4 -6.5 C-4.6 -12 4.6 -12 4.4 -6.5 C3 -9 -3 -9 -4.4 -6.5Z" fill="#e2b14a"/><ellipse cy="-13.4" rx="5" ry="1.5" fill="none" stroke="#f6d36b" stroke-width="1.3" style="filter:drop-shadow(0 0 2px #f6d36b)"/>`},
  mmf:{name:"MMF logo bauble",tier:"MMF special",size:1.7,draw:()=>`${cap(-12)}<circle r="12" fill="${MMF_LOGO?"#fffaf0":"url(#gNavy)"}" stroke="#e9b949" stroke-width="1.2"/>${MMF_LOGO?"":`<circle r="9.6" fill="none" stroke="#e9b949" stroke-width=".4" stroke-dasharray="1 1.4"/>`}${MMF_LOGO?`<image href="${MMF_LOGO}" x="-8.6" y="-7.2" width="17.2" height="15.4" preserveAspectRatio="xMidYMid meet"/>`:`<text y="2.4" text-anchor="middle" font-family="DM Serif Display,Georgia,serif" font-size="7.4" fill="#fff">MMF</text><text y="6.6" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="2.2" letter-spacing=".3" fill="#f6d36b">CHRISTMAS 2026</text>`}<path d="M-5 -10.5 c2 -3 5 -3 5 0 c0 -3 3 -3 5 0" fill="none" stroke="#1d6b3b" stroke-width="1.6" stroke-linecap="round"/><circle cx="-1" cy="-10.2" r="1.1" fill="#d8314c"/><circle cx="1" cy="-10.2" r="1.1" fill="#d8314c"/><ellipse cx="-5" cy="-5" rx="2.4" ry="3.4" fill="#fff" opacity=".22" transform="rotate(30 -5 -5)"/>`},
- nutcracker:{name:"Nutcracker",tier:"MMF special",size:1.6,draw:()=>`<path d="M0 -23 a2.2 2.2 0 1 1 0.01 0" fill="none" stroke="#e9b949" stroke-width="1"/>
+ nutcracker:{name:"Nutcracker",tier:"Premium",size:1.3,draw:()=>`<path d="M0 -23 a2.2 2.2 0 1 1 0.01 0" fill="none" stroke="#e9b949" stroke-width="1"/>
   <rect x="-5" y="-20" width="10" height="8.5" rx="1" fill="#16192b"/><rect x="-5" y="-14.2" width="10" height="2.4" fill="url(#gCap)"/><circle cy="-17" r="1.3" fill="#e9b949"/>
   <path d="M-6.2 -11 Q-7.5 -4 -5 -2 L-4.4 -11Z M6.2 -11 Q7.5 -4 5 -2 L4.4 -11Z" fill="#f4f4f0"/>
   <rect x="-4.6" y="-11.6" width="9.2" height="7.6" rx="2" fill="#f6d9bf"/>
@@ -654,15 +658,33 @@ document.getElementById("qPlus").onclick=()=>{qty=Math.min(10,qty+1);renderPicke
 const fMsg=document.getElementById("fMsg");fMsg.addEventListener("input",()=>document.getElementById("mCount").textContent=fMsg.value.length);
 const fNameEl=document.getElementById("fName");function chkMsg(){document.getElementById("mCount").textContent=fMsg.value.length;document.getElementById("fErr").hidden=true}
 fNameEl.addEventListener("input",chkMsg);fMsg.addEventListener("input",chkMsg);
-document.getElementById("decoForm").addEventListener("submit",e=>{e.preventDefault();
+// Photo baubles: the photo is shrunk to a small square in the buyer's browser, shown as a preview, and sent just before they pay.
+const fPh=document.getElementById("fPhoto");
+function showPhoto(){document.getElementById("phPrev").hidden=!PHOTO;if(PHOTO)document.getElementById("phSvg").innerHTML=DECO.photo.draw(PHOTO);document.querySelector('label[for="fPhoto"]').textContent=PHOTO?"Change photo":"Add your photo";renderPicker()}
+fPh.addEventListener("change",()=>{const f=fPh.files[0],er=document.getElementById("phErr");er.hidden=true;if(!f)return;
+ const u=URL.createObjectURL(f),im=new Image();
+ im.onload=()=>{try{const S=320,c=document.createElement("canvas");c.width=c.height=S;const k=Math.min(im.naturalWidth,im.naturalHeight);
+   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,S,S);g.drawImage(im,(im.naturalWidth-k)/2,(im.naturalHeight-k)/2,k,k,0,0,S,S);
+   let q=.82,d=c.toDataURL("image/jpeg",q);while(d.length>110000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}
+   if(!d.startsWith("data:image/jpeg"))throw 0;PHOTO=d;showPhoto()}catch(x){er.hidden=false}URL.revokeObjectURL(u)};
+ im.onerror=()=>{er.hidden=false;URL.revokeObjectURL(u)};im.src=u;fPh.value=""});
+document.getElementById("phClear").onclick=()=>{PHOTO="";showPhoto()};
+window.addEventListener("pageshow",()=>{const g=document.getElementById("goBuy");if(g.disabled){g.disabled=false;renderPicker()}});
+document.getElementById("decoForm").addEventListener("submit",async e=>{e.preventDefault();
  const url=CONFIG.links[String(qty)];if(!url){comingSoon();return}
- // The name and wish travel to Stripe inside the payment reference (letters, numbers, - and _ only, 200 at most)
+ // The name, wish and photo reference travel to Stripe inside the payment reference (letters, numbers, - and _ only, 200 at most)
  const nm=document.getElementById("fName").value.replace(/\s+/g," ").trim(),ms=fMsg.value.replace(/\s+/g," ").trim();
- let ref="d_"+choice;
- if(nm||ms){const bytes=new TextEncoder().encode(nm+"\n"+ms);
-  if(bytes.length>138){document.getElementById("fErr").hidden=false;fMsg.focus();return}
-  ref+="__"+btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+ const withPhoto=choice==="photo"&&!!PHOTO,enc=t=>new TextEncoder().encode(t);
+ if(enc(nm+"\n"+ms+(withPhoto?"\n000000000000":"")).length>138){document.getElementById("fErr").hidden=false;fMsg.focus();return}
  document.getElementById("fErr").hidden=true;
+ let tok="";
+ if(withPhoto){const g=document.getElementById("goBuy"),old=g.textContent;g.disabled=true;g.textContent="Saving your photo...";
+  try{const r=await fetch("/api/photo",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({img:PHOTO})});const j=await r.json();if(!r.ok||!/^[0-9a-f]{12}$/.test(j.ref||""))throw 0;tok=j.ref;try{localStorage.setItem("mmfTreePhoto",PHOTO)}catch(x){}}
+  catch(x){g.disabled=false;g.textContent=old;document.getElementById("phErr").hidden=false;return}}
+ // Keep the buyer's own name, wish and photo in their browser, so they can see them on their decoration straight away.
+ try{localStorage.setItem("mmfTreeMsg",JSON.stringify({n:nm,m:ms}));if(!tok)localStorage.removeItem("mmfTreePhoto")}catch(x){}
+ let ref="d_"+choice;
+ if(nm||ms||tok){const bytes=enc(nm+"\n"+ms+(tok?"\n"+tok:""));ref+="__"+btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
  location.href=url+(url.includes("?")?"&":"?")+"client_reference_id="+ref;
 });
 renderPicker();
@@ -798,11 +820,15 @@ function thankShow(){if(showOn)return;showOn=true;const sl=document.getElementBy
  lightUp(lights.length);star.classList.remove("gone","unlit");star.classList.add("lit");svg.querySelectorAll(".garland").forEach(g=>g.style.opacity=".8");
  if(!still){sl.hidden=false;sl.style.animation="none";void sl.offsetWidth;sl.style.animation="fly 7s linear 1 both"}
  celebrate("Your decoration is on the tree!","Thank you for supporting MMF");
- setTimeout(()=>{sl.style.animation="";showOn=false;setNow()},still?5000:7600)}
+ setTimeout(()=>{sl.style.animation="";showOn=false;setNow();if(typeof afterThanks==="function")afterThanks()},still?5000:7600)}
 
 /* ---------- Live data ---------- */
 const API="/api/tree",DATA=`https://raw.githubusercontent.com/${CONFIG.repo}/main/data.json`;
-let lastKey="",firstLoad=true;
+let lastKey="",firstLoad=true,MYPHOTO="",MYMSG={n:"",m:""};try{MYPHOTO=localStorage.getItem("mmfTreePhoto")||"";const z=JSON.parse(localStorage.getItem("mmfTreeMsg")||"{}");MYMSG={n:String(z.n||"").slice(0,30),m:String(z.m||"").slice(0,80)}}catch(e){}
+// When the thank-you moment ends, show the buyer their own decoration card, with a note if it is still waiting for approval.
+function afterThanks(){const s=SUPPORTERS.find(z=>z[4]===MINE_ID);if(!s||!back.hidden)return;if(!(s[5]||MYMSG.n||MYMSG.m||s[3]))return;
+ openCard(s[0] in DECO?s[0]:"bauble_red",s[1],s[2],s[3]);
+ if(!s[6])dlg.querySelector(".row").insertAdjacentHTML("beforebegin",'<p class="hint" style="color:#5d6481;margin-top:8px">Only you can see this for now. Everyone else will see it once a member of the MMF team has approved it.</p>')}
 async function getJSON(u){try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}}
 async function refresh(){
  const [t,d]=await Promise.all([getJSON(API+"?t="+Math.floor(Date.now()/15000)),getJSON(DATA+"?t="+Math.floor(Date.now()/60000))]);
@@ -811,9 +837,14 @@ async function refresh(){
  const paperT=Math.max(0,parseInt(d&&d.paperTickets,10)||0),paperD=(d&&Array.isArray(d.paperDecorations))?d.paperDecorations:[];
  const goal=parseInt(d&&d.goal,10)>0?parseInt(d.goal,10):CONFIG.goal;
  const sold=(t&&typeof t.sold==="number"?t.sold:0)+paperT;
- const key=JSON.stringify([sold,goal,list,ok,paperD]);if(key===lastKey)return;lastKey=key;
+ const key=JSON.stringify([sold,goal,list,ok,paperD,MINE_ID]);if(key===lastKey)return;lastKey=key;
  SOLD=sold;GOAL=goal;
- SUPPORTERS=list.map(x=>{const a=Object.assign({},(x.n||x.m)?{n:x.n,m:x.m}:{},ok[x.id]||{});return [x.d,a.n||"A supporter",a.m||"",a.p?`https://raw.githubusercontent.com/${CONFIG.repo}/main/${a.p}`:"",x.id,!!a.n]})
+ SUPPORTERS=list.map(x=>{const a=Object.assign({},(x.n||x.m)?{n:x.n,m:x.m}:{},ok[x.id]||{});
+  // Before approval, the buyer alone sees the name and wish they typed, from the copy kept in their own browser.
+  const done=!!(a.n||a.m),mine=x.id===MINE_ID&&!done;
+  // A photo shows to everyone once approved. Before that, only the buyer sees it, from a copy kept in their own browser.
+  const ph=a.p?`https://raw.githubusercontent.com/${CONFIG.repo}/main/${a.p}`:x.p?`/api/photo?id=${x.id}`:(x.d==="photo"&&x.id===MINE_ID&&MYPHOTO)?MYPHOTO:"";
+  return [x.d,a.n||(mine&&MYMSG.n)||"A supporter",done?(a.m||""):(mine?MYMSG.m:""),ph,x.id,!!a.n,done||!!x.p]})
   .concat(paperD.map((x,i)=>[x.d in DECO?x.d:"bauble_red",x.n||"A supporter",x.m||"","","paper"+i,!!x.n]));
  drawSupporters();
  if(firstLoad){firstLoad=false;animateCount();msQuiet=false}else setNow();
@@ -821,7 +852,7 @@ async function refresh(){
 // "This is yours": Stripe sends buyers back with ?mine={CHECKOUT_SESSION_ID}; its hash is the decoration's id
 (async()=>{try{const sid=new URLSearchParams(location.search).get("mine");if(!sid||!window.crypto||!crypto.subtle)return;
  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(sid));
- MINE_ID=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16);markMine(MINE_ID)}catch(e){}})();
+ MINE_ID=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16);markMine(MINE_ID);refresh()}catch(e){}})();
 refresh();setInterval(refresh,30000);
 </script>
 </body>
