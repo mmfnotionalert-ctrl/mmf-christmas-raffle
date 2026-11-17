@@ -7,8 +7,8 @@ export const STORE = 'christmas-raffle';
 
 // Which decorations each number of tickets unlocks. Must match the page.
 const CLASSIC = ['bauble_red', 'bauble_gold', 'cane', 'snow'];
-const PREMIUM = ['gstar', 'robin', 'angel'];
-const SPECIAL = ['mmf', 'nutcracker', 'photo'];
+const PREMIUM = ['gstar', 'robin', 'angel', 'nutcracker'];
+const SPECIAL = ['mmf', 'photo'];
 
 export const shortHash = (s) => createHash('sha256').update(String(s)).digest('hex').slice(0, 16);
 
