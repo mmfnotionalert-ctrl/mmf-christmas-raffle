@@ -10,6 +10,23 @@ import { CAMPAIGN, STORE, recordFromSession, shortHash, update } from '../lib/tr
 export const config = { path: '/api/stripe-webhook' };
 
 const TOLERANCE = 300; // seconds
+const DESCRIPTION = 'Christmas Raffle 2026 tickets';
+
+// Labels the payment in Stripe so it is easy to spot on the Transactions list. Optional: it only
+// runs when STRIPE_DESCRIBE_KEY (a restricted key that can write PaymentIntents and nothing else)
+// is set, and a failure here never stops the ticket being counted.
+async function describe(pi) {
+  const key = process.env.STRIPE_DESCRIBE_KEY;
+  if (!key || typeof pi !== 'string' || !/^pi_[A-Za-z0-9]+$/.test(pi)) return 'skipped';
+  try {
+    const r = await fetch(`https://api.stripe.com/v1/payment_intents/${pi}`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ description: DESCRIPTION }),
+    });
+    return r.ok ? 'described' : `describe failed ${r.status}`;
+  } catch { return 'describe failed'; }
+}
 
 function verify(body, header, secret) {
   if (!header) return false;
@@ -46,7 +63,8 @@ export default async (req) => {
     if (obj.payment_status !== 'paid' || (obj.metadata || {}).campaign !== CAMPAIGN) return new Response('Ignored', { status: 200 });
     const rec = recordFromSession(obj);
     const result = await update(store, (records) => (records.some((r) => r.id === rec.id) ? null : [...records, rec]));
-    console.log(`webhook: purchase ${rec.id} (${rec.q} ticket(s), ${rec.d}) ${result}`);
+    const label = await describe(obj.payment_intent);
+    console.log(`webhook: purchase ${rec.id} (${rec.q} ticket(s), ${rec.d}) ${result}, ${label}`);
     return new Response(result, { status: 200 });
   }
 
