@@ -24,7 +24,9 @@ export default async (req) => {
     if (r.s === 'a' && r.ph && r.po) out.p = 1; // an approved photo: the page fetches it from /api/photo
     return out;
   });
-  return new Response(JSON.stringify({ sold, decorations, webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) }), {
+  // How many names, wishes or photos are waiting for the MMF team. A number only, so staff alerts know when to look.
+  const waiting = live.filter((r) => r.s === 'p' && (r.n || r.m || r.ph)).length;
+  return new Response(JSON.stringify({ sold, decorations, waiting, webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) }), {
     headers: fresh
       ? { 'content-type': 'application/json', 'cache-control': 'no-store', 'netlify-cdn-cache-control': 'no-store' }
       : {
