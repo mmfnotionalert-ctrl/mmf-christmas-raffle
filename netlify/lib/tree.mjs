@@ -25,15 +25,16 @@ export function clean(s, max) {
   return [...String(s ?? '').replace(CONTROL, ' ').replace(/\s+/g, ' ').trim()].slice(0, max).join('');
 }
 
-// The page sends the name and wish inside the payment reference: d_<decoration>__<base64url of "name\nwish">
+// The page sends the name, wish and (for photo baubles) a photo reference inside the payment reference:
+// d_<decoration>__<base64url of "name\nwish\nphotoref">
 function fromReference(ref) {
   const i = ref.indexOf('__');
-  if (i < 0) return { n: '', m: '' };
+  if (i < 0) return { n: '', m: '', ph: '' };
   try {
-    const text = Buffer.from(ref.slice(i + 2), 'base64url').toString('utf8');
-    const j = text.indexOf('\n');
-    return { n: clean(j < 0 ? text : text.slice(0, j), 30), m: clean(j < 0 ? '' : text.slice(j + 1), 80) };
-  } catch { return { n: '', m: '' }; }
+    const parts = Buffer.from(ref.slice(i + 2), 'base64url').toString('utf8').split('\n');
+    const ph = /^[0-9a-f]{12}$/.test(parts[2] || '') ? parts[2] : '';
+    return { n: clean(parts[0] || '', 30), m: clean(parts[1] || '', 80), ph };
+  } catch { return { n: '', m: '', ph: '' }; }
 }
 
 // The optional "Longer message for the tree" box at the Stripe checkout
@@ -57,7 +58,10 @@ export function recordFromSession(s) {
   const rec = { id: shortHash(s.id), pi: s.payment_intent ? shortHash(s.payment_intent) : null, t: s.created, q, d, v: false };
   const typed = fromReference(ref);
   const wish = longerMessage(s) || typed.m;
-  if (typed.n || wish) { rec.n = typed.n; rec.m = wish; rec.s = 'p'; }
+  // ph is the reference of a photo the buyer uploaded before paying. po turns true only when MMF approves the photo.
+  const photo = d === 'photo' ? typed.ph : '';
+  if (typed.n || wish || photo) { rec.n = typed.n; rec.m = wish; rec.s = 'p'; }
+  if (photo) { rec.ph = photo; rec.po = false; }
   return rec;
 }
 
