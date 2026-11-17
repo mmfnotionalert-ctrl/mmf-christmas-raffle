@@ -4,10 +4,12 @@ import { getStore } from '@netlify/blobs';
 
 export const config = { path: '/api/tree' };
 
-export default async () => {
+export default async (req) => {
+  // A buyer just back from paying asks with ?fresh= so they are never shown an older saved copy.
+  const fresh = new URL(req.url).searchParams.has('fresh');
   let records = [];
   try {
-    const store = getStore('christmas-raffle');
+    const store = getStore(fresh ? { name: 'christmas-raffle', consistency: 'strong' } : 'christmas-raffle');
     const idx = await store.get('index', { type: 'json' });
     records = (idx && idx.records) || [];
   } catch (e) {
@@ -23,10 +25,12 @@ export default async () => {
     return out;
   });
   return new Response(JSON.stringify({ sold, decorations, webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) }), {
-    headers: {
-      'content-type': 'application/json',
-      'cache-control': 'public, max-age=0, must-revalidate',
-      'netlify-cdn-cache-control': 'public, s-maxage=15, stale-while-revalidate=60',
-    },
+    headers: fresh
+      ? { 'content-type': 'application/json', 'cache-control': 'no-store', 'netlify-cdn-cache-control': 'no-store' }
+      : {
+          'content-type': 'application/json',
+          'cache-control': 'public, max-age=0, must-revalidate',
+          'netlify-cdn-cache-control': 'public, s-maxage=15, stale-while-revalidate=60',
+        },
   });
 };
