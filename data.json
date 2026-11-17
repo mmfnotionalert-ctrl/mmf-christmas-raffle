@@ -1,5 +1,5 @@
 {
- "updated": "16 Nov 2026",
+ "updated": "17 Nov 2026",
  "goal": 500,
  "paperTickets": 0,
  "paperDecorations": [
@@ -9,6 +9,10 @@
    "m": "Merry Christmas from all the staff at MMF"
   }
  ],
- "decorations": {},
+ "decorations": {
+  "061629857ddc7ffb": {
+   "p": "photos/061629857ddc7ffb.jpg"
+  }
+ },
  "hidden": []
 }
