@@ -824,14 +824,14 @@ function thankShow(){if(showOn)return;showOn=true;const sl=document.getElementBy
 
 /* ---------- Live data ---------- */
 const API="/api/tree",DATA=`https://raw.githubusercontent.com/${CONFIG.repo}/main/data.json`;
-let lastKey="",firstLoad=true,MYPHOTO="",MYMSG={n:"",m:""};try{MYPHOTO=localStorage.getItem("mmfTreePhoto")||"";const z=JSON.parse(localStorage.getItem("mmfTreeMsg")||"{}");MYMSG={n:String(z.n||"").slice(0,30),m:String(z.m||"").slice(0,80)}}catch(e){}
+let WAITING=false,lastKey="",firstLoad=true,MYPHOTO="",MYMSG={n:"",m:""};try{MYPHOTO=localStorage.getItem("mmfTreePhoto")||"";const z=JSON.parse(localStorage.getItem("mmfTreeMsg")||"{}");MYMSG={n:String(z.n||"").slice(0,30),m:String(z.m||"").slice(0,80)}}catch(e){}
 // When the thank-you moment ends, show the buyer their own decoration card, with a note if it is still waiting for approval.
 function afterThanks(){const s=SUPPORTERS.find(z=>z[4]===MINE_ID);if(!s||!back.hidden)return;if(!(s[5]||MYMSG.n||MYMSG.m||s[3]))return;
  openCard(s[0] in DECO?s[0]:"bauble_red",s[1],s[2],s[3]);
  if(!s[6])dlg.querySelector(".row").insertAdjacentHTML("beforebegin",'<p class="hint" style="color:#5d6481;margin-top:8px">Only you can see this for now. Everyone else will see it once a member of the MMF team has approved it.</p>')}
 async function getJSON(u){try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}}
 async function refresh(){
- const [t,d]=await Promise.all([getJSON(API+"?t="+Math.floor(Date.now()/15000)),getJSON(DATA+"?t="+Math.floor(Date.now()/60000))]);
+ const [t,d]=await Promise.all([getJSON(API+(WAITING?"?fresh="+Date.now():"?t="+Math.floor(Date.now()/15000))),getJSON(DATA+"?t="+Math.floor(Date.now()/60000))]);
  const ok=(d&&d.decorations)||{},hidden=new Set((d&&d.hidden)||[]);
  const list=((t&&t.decorations)||[]).filter(x=>!hidden.has(x.id));
  const paperT=Math.max(0,parseInt(d&&d.paperTickets,10)||0),paperD=(d&&Array.isArray(d.paperDecorations))?d.paperDecorations:[];
@@ -852,7 +852,13 @@ async function refresh(){
 // "This is yours": Stripe sends buyers back with ?mine={CHECKOUT_SESSION_ID}; its hash is the decoration's id
 (async()=>{try{const sid=new URLSearchParams(location.search).get("mine");if(!sid||!window.crypto||!crypto.subtle)return;
  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(sid));
- MINE_ID=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16);markMine(MINE_ID);refresh()}catch(e){}})();
+ MINE_ID=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16);if(markMine(MINE_ID))return;
+ // Just back from paying: check every second and a half until the decoration arrives, and say so while they wait.
+ WAITING=true;const bar=document.getElementById("mineBar"),w=document.createElement("div");w.className="minebar";w.id="mineWait";w.setAttribute("role","status");
+ w.innerHTML="<span><b>Thank you!</b> We are hanging your decoration on the tree now. It will appear in a few seconds.</span>";bar.parentNode.insertBefore(w,bar);
+ const have=()=>!!decoLayer.querySelector(`.deco[data-id="${MINE_ID}"]`);
+ for(let i=0;i<60&&!have();i++){await refresh();if(have())break;await new Promise(r=>setTimeout(r,1500))}
+ WAITING=false;if(have())w.remove();else w.innerHTML="<span><b>Thank you!</b> Your payment is safe. Your decoration is taking a little longer than usual and will appear on the tree shortly.</span>";}catch(e){WAITING=false}})();
 refresh();setInterval(refresh,30000);
 </script>
 </body>
