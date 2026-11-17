@@ -1,8 +1,9 @@
-// Staff only: lists the names and wishes waiting for approval and saves MMF's decisions.
+// Staff only: lists the names, wishes and photos waiting for approval and saves MMF's decisions.
 // Protected by the APPROVE_PASSPHRASE environment variable, which staff type on the /approve page.
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 import { STORE, clean, update } from '../lib/tree.mjs';
+import { jpegFromDataUrl } from './photo.mjs';
 
 export const config = { path: '/api/approve' };
 
@@ -24,7 +25,14 @@ export default async (req) => {
     const items = ((idx && idx.records) || [])
       .filter((r) => r && !r.v && r.s)
       .sort((a, b) => b.t - a.t)
-      .map((r) => ({ id: r.id, t: r.t, q: r.q, d: r.d, n: r.n || '', m: r.m || '', s: r.s }));
+      .map((r) => ({ id: r.id, t: r.t, q: r.q, d: r.d, n: r.n || '', m: r.m || '', s: r.s, ph: r.ph || '', po: Boolean(r.po) }));
+    // Send each uploaded photo with its entry, so staff can see it before deciding.
+    await Promise.all(items.map(async (it) => {
+      const ref = it.ph; delete it.ph;
+      if (!ref) return;
+      const img = await store.get('photo/' + ref, { type: 'text' });
+      if (jpegFromDataUrl(img)) it.img = img;
+    }));
     return json({ items });
   }
 
@@ -39,7 +47,8 @@ export default async (req) => {
     const result = await update(store, (records) => {
       found = records.some((r) => r.id === id && r.s);
       if (!found) return null;
-      return records.map((r) => (r.id === id ? { ...r, n, m, s } : r));
+      // The photo only goes public when the entry is approved and staff left "show the photo" ticked.
+      return records.map((r) => (r.id === id ? { ...r, n, m, s, ...(r.ph ? { po: s === 'a' && body.photo !== false } : {}) } : r));
     });
     return found ? json({ ok: true, result }) : json({ error: 'not-found' }, 404);
   }
