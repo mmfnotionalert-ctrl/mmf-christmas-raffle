@@ -491,20 +491,20 @@ const MS=[[25,"the star appears","The star has appeared!"],[50,"the garland goes
 const SHARE_URL=location.origin+location.pathname;
 const DAYS=[
  ["2026-11-20","Two £50 vouchers","The Thatch"],
- ["2026-11-21","Afternoon tea at the Culloden","Hastings Hotels"],
- ["2026-11-22","£50 voucher","The Jungle NI"],
- ["2026-11-23","Family ticket","Belfast Zoo"],
- ["2026-11-24","Christmas hamper","Maegden, Bushmills"],
- ["2026-11-25","4 tickets to a home league game at Windsor Park","Linfield FC"],
- ["2026-11-26","Cliff path experience for 2 adults and 2 children","The Gobbins"],
- ["2026-11-27","Family pass","W5"],
- ["2026-11-28","A Mash Direct hamper","Mash Direct"],
- ["2026-11-29","£100 voucher","RED Groomswear Belfast"],
- ["2026-11-30","£100 voucher for a kids' party, archery, bushcraft or paintball","Breckenhill"],
- ["2026-12-01","£100 voucher","The Present Tree"],
- ["2026-12-02","Two night stay for a family of up to 10 people","Share Discovery Village"],
- ["2026-12-03","2 tickets to The Open 2027 at St Andrews","The R&A"],
- ["2026-12-04","A night in a Forest Bubble Dome with breakfast","Finn Lough"]
+ ["2026-11-20","Afternoon tea at the Culloden","Hastings Hotels"],
+ ["2026-11-21","£50 voucher","The Jungle NI"],
+ ["2026-11-21","Family ticket","Belfast Zoo"],
+ ["2026-11-22","Christmas hamper","Maegden, Bushmills"],
+ ["2026-11-23","4 tickets to a home league game at Windsor Park","Linfield FC"],
+ ["2026-11-24","Cliff path experience for 2 adults and 2 children","The Gobbins"],
+ ["2026-11-25","Family pass","W5"],
+ ["2026-11-26","A Mash Direct hamper","Mash Direct"],
+ ["2026-11-27","£100 voucher","RED Groomswear Belfast"],
+ ["2026-11-28","£100 voucher for a kids' party, archery, bushcraft or paintball","Breckenhill"],
+ ["2026-11-28","£100 voucher","The Present Tree"],
+ ["2026-11-29","Two night stay for a family of up to 10 people","Share Discovery Village"],
+ ["2026-11-30","2 tickets to The Open 2027 at St Andrews","The R&A"],
+ ["2026-12-01","A night in a Forest Bubble Dome with breakfast","Finn Lough"]
 ];
 const BONUS=[
  
@@ -719,7 +719,10 @@ star.addEventListener("click",()=>{if(!star.classList.contains("gone"))sparkBurs
 function dropIn(g){const inner=g.firstElementChild;if(!inner||!inner.animate||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
  inner.animate([{transform:"translateY(-90px) scale(.5)",opacity:0},{transform:"translateY(5px) scale(1.12)",opacity:1,offset:.6},{transform:"translateY(-3px) scale(.96)",offset:.8},{transform:"translateY(0) scale(1)",opacity:1}],{duration:950,easing:"ease-out"});
  const m=/translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(g.getAttribute("transform")||"");if(m)setTimeout(()=>sparkBurst(+m[1],+m[2],34,8),560)}
-function nextGiftText(today){const nx=DAYS.find(d=>d[0]>today);
+function nextGiftText(today){const nx=DAYS.find(d=>d[0]>today),t=nextGiftOne(today);
+ // Some days open two presents, so the wording follows how many are next.
+ return nx&&DAYS.filter(d=>d[0]===nx[0]).length>1?t.replace("first present opens","first two presents open").replace("Next present opens","Next two presents open"):t}
+function nextGiftOne(today){const nx=DAYS.find(d=>d[0]>today);
  if(!nx)return "Every present is open. Tap one to see inside";
  const dd=Math.round((new Date(nx[0]+"T12:00:00")-new Date(today+"T12:00:00"))/864e5);
  if(today<DAYS[0][0])return dd===1?"The first present opens tomorrow":`The first present opens on ${fmt(nx[0])}`;
